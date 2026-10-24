@@ -1,0 +1,52 @@
+name: Build Lumina IPA (unsigned)
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    name: Build unsigned IPA
+    runs-on: macos-14
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build (unsigned, iPhone)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project Lumina.xcodeproj \
+            -scheme Lumina \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            | tail -40
+
+      - name: Package IPA
+        run: |
+          APP="build/Build/Products/Release-iphoneos/Lumina.app"
+          test -d "$APP" || { echo "app bundle missing"; exit 1; }
+          rm -rf Payload Lumina-unsigned.ipa
+          mkdir -p Payload
+          cp -R "$APP" Payload/
+          zip -qry Lumina-unsigned.ipa Payload
+          ls -lh Lumina-unsigned.ipa
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lumina-unsigned-ipa
+          path: Lumina-unsigned.ipa
+          retention-days: 30
