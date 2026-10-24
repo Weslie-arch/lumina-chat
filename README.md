@@ -23,18 +23,24 @@ GitHub Actions 的 Mac 机器上**没有你的苹果证书**，所以云端只�
 
 ## 完整安装流程（全程 Windows，零付费）
 
-### 第 1 步：把这堆文件传到 GitHub
+### 第 1～2 步：已完成 ✅
 
-1. 注册 / 登录 [github.com](https://github.com)
-2. 新建仓库，名字随意（比如 `lumina-ios`），**选 Public（公开）**——公开仓库的 macOS 编译分钟数免费
-3. 推荐 [GitHub Desktop](https://desktop.github.com)（装好后 File → Add local repository，选这个 `lumina-ios` 文件夹，Commit → Push）
-   - 不想装软件也行：仓库网页 → `Add file` → `Upload files`，把本目录里所有文件和文件夹（含 `.github` 那个隐藏文件夹）拖进去，Commit
+仓库已建好、IPA 已编译并下载到本地：
 
-### 第 2 步：云端编译 IPA
+- 仓库：<https://github.com/Weslie-arch/lumina-chat>（Public，macOS 编译分钟免费）
+- 产物：`Lumina.ipa`（工作区根目录，约 157 KB）
 
-1. 仓库页 → **Actions** 标签 → 左侧 `Build Lumina IPA (unsigned)` → **Run workflow**
-2. 等几分钟变绿（✓），点进去 → 底部 **Artifacts** → 下载 `Lumina-unsigned-ipa`
-3. 下载的是 zip，**解压一次**得到 `Lumina-unsigned.ipa`
+**直接跳到第 3 步。**
+
+以后要重新出包（只有改图标 / URL / 壳代码才需要）：push 一次，Actions 自动跑，约 1.5 分钟出包。
+
+```bash
+gh run list --limit 1            # 拿到 run id
+gh run watch <id> --exit-status  # 等它跑完
+gh run download <id> --dir ipa-out
+```
+
+> 构建机是 `macos-15`（Xcode 16）。别改回 `macos-14`——那边是 Xcode 15.4，读不了 xcodegen 生成的工程格式 77，会报 "future Xcode project file format"。
 
 ### 第 3 步：iPhone 开启开发者模式（一次性）
 
